@@ -1,18 +1,41 @@
 pipeline {
-  agent { label 'kubepod' }
-  
+
+  options {
+    ansiColor('xterm')
+  }
+
+  agent {
+    kubernetes {
+      yamlFile 'builder.yaml'
+    }
+  }
+
   stages {
-    stage('Checkout source') {
+
+    stage('Kaniko Build & Push Image') {
       steps {
-        git url:'https://github.com/web-riset/tes-deployment.git', branch:'main'
-      }
-   }
-    stage('Deploy App') {
-      steps {
-        script{
-          kubernetesDeploy(configs: "nginx.yaml" , kubeconfigId: "mykubeconfig")
-        }       
+        container('kaniko') {
+          script {
+            sh '''
+            /kaniko/executor --dockerfile `pwd`/Dockerfile \
+                             --context `pwd` \
+                             --destination=devopsinfotechumm/myweb:${BUILD_NUMBER}
+            '''
+          }
+        }
       }
     }
+
+    stage('Deploy App to Kubernetes') {     
+      steps {
+        container('kubectl') {
+          withCredentials([file(credentialsId: 'mykubeconfig', variable: 'KUBECONFIG')]) {
+            sh 'sed -i "s/<TAG>/${BUILD_NUMBER}/" myweb.yaml'
+            sh 'kubectl apply -f myweb.yaml'
+          }
+        }
+      }
+    }
+  
   }
 }
