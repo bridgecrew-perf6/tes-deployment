@@ -29,11 +29,9 @@ pipeline {
     stage('Deploy App to Kubernetes') {     
       steps {
         container('kubectl') {
-          withCredentials([file(credentialsId: 'mykubeconfig', variable: 'KUBECONFIG')]) {
-            sh 'sed -i "s/<TAG>/${BUILD_NUMBER}/" myweb.yaml'
-            sh 'kubectl get all -A'
-            //sh 'kubectl apply -f myweb.yaml'
-          }
+          withKubeConfig([credentialsId: 'jenkins-kubernetes-default', serverUrl: 'https://10.10.11.232:6443']) {
+      sh 'kubectl get node'
+    }
         }
       }
     }
