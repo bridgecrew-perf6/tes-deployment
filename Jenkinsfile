@@ -19,7 +19,7 @@ pipeline {
             sh '''
             /kaniko/executor --dockerfile `pwd`/Dockerfile \
                              --context `pwd` \
-                             --destination=devopsinfotechumm/myweb:${BUILD_NUMBER}
+                             --destination=devopsinfotechumm/myweb:latest
             '''
           }
         }
@@ -30,7 +30,7 @@ pipeline {
       steps {
         container('kubectl') {
           withKubeConfig([credentialsId: 'jenkins-kubernetes-default', serverUrl: 'https://10.10.11.232:6443']) {
-            sh 'sed -i "s/<TAG>/${BUILD_NUMBER}/" myweb.yaml'
+            sh 'sed -i "s/<TAG>/latest/" myweb.yaml'
             sh 'kubectl apply -f myweb.yaml'
           }
         }
