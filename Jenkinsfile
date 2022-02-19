@@ -12,19 +12,19 @@ pipeline {
 
   stages {
 
-    stage('Kaniko Build & Push Image') {
-      steps {
-        container('kaniko') {
-          script {
-            sh '''
-            /kaniko/executor --dockerfile `pwd`/Dockerfile \
-                             --context `pwd` \
-                             --destination=devopsinfotechumm/myweb:latest
-            '''
-          }
-        }
-      }
-    }
+//     stage('Kaniko Build & Push Image') {
+//       steps {
+//         container('kaniko') {
+//           script {
+//             sh '''
+//             /kaniko/executor --dockerfile `pwd`/Dockerfile \
+//                              --context `pwd` \
+//                              --destination=devopsinfotechumm/myweb:latest
+//             '''
+//           }
+//         }
+//       }
+//     }
 
     stage('Deploy App to Kubernetes') {     
       steps {
