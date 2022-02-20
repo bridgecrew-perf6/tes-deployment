@@ -17,7 +17,7 @@ spec:
         app: myweb
     spec:
       containers:
-      - image: devopsinfotechumm/myweb:latest
+      - image: devopsinfotechumm/myweb:<TAG>
         imagePullPolicy: Always
         name: myweb
 
