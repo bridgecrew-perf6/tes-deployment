@@ -1,40 +1,52 @@
-pipeline {
-
+pipeline{
+  
   options {
     ansiColor('xterm')
   }
 
-  agent {
-    kubernetes {
-      yamlFile 'builder.yaml'
-    }
+  environment {
+    registry = "10.10.11.235:5000/batik50-cnn"
+    dockerImage = ""
   }
+  agent none
 
   stages {
-
-    stage('Kaniko Build & Push Image') {
-      steps {
-        container('kaniko') {
-          script {
-            sh '''
-            /kaniko/executor --dockerfile `pwd`/Dockerfile \
-                             --context `pwd` \
-                             --destination=devopsinfotechumm/myweb:latest
-            '''
-          }
+    stage('Build') {
+      agent { node { label 'built-in'}}
+      steps{
+        script {
+          dockerImage = docker.build registry + ":$BUILD_NUMBER"
         }
       }
     }
 
-    stage('Deploy App to Kubernetes') {     
-      steps {
-        container('kubectl') {
-          withKubeConfig([credentialsId: 'jenkins-kubernetes-default', serverUrl: 'https://10.10.11.232:6443']) {
-            sh 'sed -i "s/<TAG>/latest/" myweb.yaml'
-            sh 'kubectl apply -f myweb.yaml'
+    stage('push') {
+      agent { node { label 'built-in'}}
+      steps{
+        script {
+          docker.withRegistry( "" ) {
+            dockerImage.push()
           }
         }
       }
-    }
+    }    
+
+//     stage('Deploy App to Kubernetes') {     
+//       agent {
+//         kubernetes {
+//           yamlFile 'builder.yaml'
+//         }
+//       }
+//       steps {
+//         container('kubectl') {
+//           withKubeConfig([credentialsId: 'jenkins-kubernetes', serverUrl: 'https://10.10.11.232:6443']) {
+//             // sh 'kubectl delete -f deployment.yaml'
+//             sh 'sed -i "s~<IMAGE>~${registry}:${BUILD_NUMBER}~" deployment.yaml'
+//             sh 'kubectl apply -f deployment.yaml'
+//           }
+//         }
+//       }
+//     }
   }
 }
+
