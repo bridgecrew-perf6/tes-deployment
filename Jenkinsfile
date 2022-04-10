@@ -5,7 +5,7 @@ pipeline{
   }
 
   environment {
-    registry = "10.10.11.235:5000/batik50-cnn"
+    registry = "10.10.11.235:5000/test-deployment"
     dockerImage = ""
   }
   agent none
